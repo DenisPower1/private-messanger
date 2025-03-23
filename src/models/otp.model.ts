@@ -1,11 +1,20 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const otpSchema = new mongoose.Schema({
+interface schemaInterface {
+  email: string;
+  otp: string;
+  createdAt: object;
+  tries: number;
+}
+
+const otpSchema = new mongoose.Schema<schemaInterface>({
   email: {
     type: String,
+    required: true,
   },
   otp: {
     type: String,
+    required: true,
   },
   createdAt: {
     type: Date,
@@ -18,4 +27,4 @@ const otpSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model("Otp", otpSchema);
+export default mongoose.model('Otp', otpSchema);

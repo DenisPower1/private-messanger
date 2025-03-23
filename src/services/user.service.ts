@@ -1,6 +1,6 @@
-import { ObjectId } from "mongodb";
-import User from "../models/user.model";
-import { encryptPassword } from "../utils/password";
+import { ObjectId } from 'mongodb';
+import User from '../models/user.model.js';
+import { encryptPassword } from '../utils/password.js';
 
 export const findByEmail = async (email: string) => {
   return await User.findOne({ email: email });

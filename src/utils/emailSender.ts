@@ -1,5 +1,5 @@
-import nodemail from "nodemailer";
-import dotenv from "dotenv";
+import nodemail from 'nodemailer';
+import dotenv from 'dotenv';
 dotenv.config();
 const appEmail = process.env.app_email;
 const apikey = process.env.sendinblue_key;
@@ -18,7 +18,7 @@ export const verifyEmail = (recepientEmail: string, userName: string) => {
   const mailOptions: nodemail.SendMailOptions = {
     from: appEmail,
     to: recepientEmail,
-    subject: "Private Messanger Email Verification",
+    subject: 'Private Messanger Email Verification',
     text: `Hello dear ${userName}, welcome to the Private Messanger, your credential were verified
     We will use this email you provided to send to you notifications, such as when you recieve a new message
     when you're off.
@@ -55,7 +55,7 @@ export const sendOTPCodeEmail = (email: string, OTPCode: string) => {
   const mailOptions: nodemail.SendMailOptions = {
     from: appEmail,
     to: email,
-    subject: "Recieve your Private Messanger password",
+    subject: 'Recieve your Private Messanger password',
     text: `The OTP code is: ${OTPCode} do not share it with anyone`,
   };
 

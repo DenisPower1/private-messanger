@@ -1,5 +1,5 @@
-import { hash, getSalt, compare } from "bcryptjs";
-import dotenv from "dotenv";
+import { hash, compare } from 'bcryptjs';
+import dotenv from 'dotenv';
 
 dotenv.config();
 const salLength = String(process.env.get_salt_length);

@@ -1,4 +1,4 @@
-import Otp from "../models/otp.model";
+import Otp from '../models/otp.model.js';
 
 export const validateOtp = async (email: string, otp: string) => {
   const user = await Otp.findOne({
@@ -45,7 +45,7 @@ export const storeOtp = async (userEmail: string, otp: string) => {
   if (otpRequestAlreadyExist) {
     return {
       success: false,
-      message: "User already requested OTP, wait till the ongoing OTP expires",
+      message: 'User already requested OTP, wait till the ongoing OTP expires',
     };
   } else {
     await Otp.insertOne({
@@ -55,7 +55,7 @@ export const storeOtp = async (userEmail: string, otp: string) => {
 
     return {
       success: true,
-      message: "Opt stored successfully it will expires in 4 minutes",
+      message: 'Opt stored successfully it will expires in 4 minutes',
     };
   }
 };

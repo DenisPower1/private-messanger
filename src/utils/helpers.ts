@@ -1,5 +1,5 @@
-import { DefaultEventsMap, Socket } from "socket.io";
-import { verifyToken } from "./tokenGeneration";
+import { DefaultEventsMap, Socket } from 'socket.io';
+import { verifyToken } from './tokenGeneration.js';
 
 type socketType = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
 
@@ -14,10 +14,9 @@ export const checkAuth = (socket: socketType, token: string) => {
       succes: true,
     };
   } catch (err) {
-    sendSocketMessage(socket, "authentication", {
+    sendSocketMessage(socket, 'authentication', {
       success: false,
-	  message: "You can not perform this action, login again",
-	  
+      message: 'You can not perform this action, login again',
     });
 
     return {
@@ -29,7 +28,7 @@ export const checkAuth = (socket: socketType, token: string) => {
 
 export const generateSixRandomDigits = function (): string {
   const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-  let sixRandomDigits: string = "";
+  let sixRandomDigits: string = '';
 
   for (let i = 0; i < 6; i++) {
     const randomDigit = numbers[Math.floor(Math.random() * numbers.length)];
@@ -41,9 +40,9 @@ export const generateSixRandomDigits = function (): string {
 };
 
 export const sendMessagesError = (socket: socketType) => {
-  sendSocketMessage(socket, "sendMessages", {
+  sendSocketMessage(socket, 'sendMessages', {
     success: false,
-    message: "Authentication error: your token is invalid",
+    message: 'Authentication error: your token is invalid',
   });
 };
 

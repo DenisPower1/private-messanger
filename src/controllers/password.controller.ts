@@ -1,20 +1,20 @@
-import validator from "validator";
-import { validateOtp, storeOtp } from "../services/otp.service";
-import { Request, Response } from "express";
-import { sendOTPCodeEmail } from "../utils/emailSender";
-import * as User from "../services/user.service";
-import { generateSixRandomDigits } from "../utils/helpers";
+import validator from 'validator';
+import { validateOtp, storeOtp } from '../services/otp.service.js';
+import { Request, Response } from 'express';
+import { sendOTPCodeEmail } from '../utils/emailSender.js';
+import * as User from '../services/user.service.js';
+import { generateSixRandomDigits } from '../utils/helpers.js';
 
 export const checkOtp = async (req: Request, resp: Response) => {
   const { email, otp } = req.body;
 
   const isNotEmail = !validator.isEmail(email);
-  const normalizedEmail = validator.normalizeEmail(email) || "";
+  const normalizedEmail = validator.normalizeEmail(email) || '';
 
   if (isNotEmail) {
     resp.status(400).json({
       success: false,
-      message: "Invalid e-mail provided",
+      message: 'Invalid e-mail provided',
     });
   } else {
     const otpValidation = await validateOtp(normalizedEmail, otp);
@@ -29,7 +29,7 @@ export const checkOtp = async (req: Request, resp: Response) => {
       resp.status(500).json({
         success: false,
         message:
-          "Something went wrong, the entered opt is probably invalid, remember you only have 3 tries",
+          'Something went wrong, the entered opt is probably invalid, remember you only have 3 tries',
       });
     }
   }
@@ -38,11 +38,11 @@ export const checkOtp = async (req: Request, resp: Response) => {
 export const sendOpt = async (req: Request, resp: Response) => {
   const { email } = req.body;
   const isNotEmail = !validator.isEmail(email);
-  const normalizedEmail = validator.normalizeEmail(email) || "";
+  const normalizedEmail = validator.normalizeEmail(email) || '';
   if (isNotEmail) {
     resp.status(400).json({
       success: false,
-      message: "Invalid e-mail provided",
+      message: 'Invalid e-mail provided',
     });
   } else {
     const generatedOpt = generateSixRandomDigits();

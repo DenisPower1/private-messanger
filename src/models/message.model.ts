@@ -1,16 +1,38 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const messageSchema = new mongoose.Schema(
+interface schemaInterface {
+  sender: {
+    name: string;
+    isOnline: boolean;
+    _id: string;
+  };
+  recepient: {
+    name: string;
+    isOnline: boolean;
+    _id: string;
+  };
+  content: {
+    text: string;
+  };
+  attchament: {
+    url: string;
+    fileType: string;
+  };
+
+  viewedByRecepient: boolean;
+}
+
+const messageSchema = new mongoose.Schema<schemaInterface>(
   {
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User",
+      ref: 'User',
     },
     recepient: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User",
+      ref: 'User',
     },
     content: {
       text: { type: String, required: true },
@@ -29,4 +51,4 @@ const messageSchema = new mongoose.Schema(
   },
 );
 
-export default mongoose.model("Message", messageSchema);
+export default mongoose.model('Message', messageSchema);

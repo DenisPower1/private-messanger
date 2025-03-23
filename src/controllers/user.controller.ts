@@ -1,18 +1,18 @@
-import { Response, Request } from "express";
-import * as userService from "../services/user.service";
-import { verifyEmail } from "../utils/emailSender";
-import { generateToken, verifyToken } from "../utils/tokenGeneration";
-import { checkPassword } from "../utils/password";
-import { DefaultEventsMap, Socket } from "socket.io";
-import { checkAuthNoSocket, sendSocketMessage } from "../utils/helpers";
-import validator from "validator";
+import { Response, Request } from 'express';
+import * as userService from '../services/user.service.js';
+import { verifyEmail } from '../utils/emailSender.js';
+import { generateToken } from '../utils/tokenGeneration.js';
+import { checkPassword } from '../utils/password.js';
+import { DefaultEventsMap, Socket } from 'socket.io';
+import { checkAuthNoSocket, sendSocketMessage } from '../utils/helpers.js';
+import validator from 'validator';
 
 export const getUser = async (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
   body: any,
 ) => {
   const { email, password } = body;
-  const eventName = "authentication";
+  const eventName = 'authentication';
 
   const isNotEmail = !validator.isEmail(email);
   const normalizedEmail = validator.normalizeEmail(email);
@@ -20,7 +20,7 @@ export const getUser = async (
   if (isNotEmail) {
     sendSocketMessage(socket, eventName, {
       success: false,
-      message: "Use a valid e-mail format please!",
+      message: 'Use a valid e-mail format please!',
       error: 400,
     });
 
@@ -31,7 +31,7 @@ export const getUser = async (
     if (user == void 0) {
       sendSocketMessage(socket, eventName, {
         success: false,
-        message: "The user does not exist",
+        message: 'The user does not exist',
         error: 404,
       });
     } else if (user) {
@@ -41,7 +41,7 @@ export const getUser = async (
       if (!isSamePassWord) {
         sendSocketMessage(socket, eventName, {
           success: false,
-          message: "Invalid credentials",
+          message: 'Invalid credentials',
           error: 403,
         });
       } else {
@@ -53,7 +53,7 @@ export const getUser = async (
 
         sendSocketMessage(socket, eventName, {
           success: true,
-          message: "User logged successfully",
+          message: 'User logged successfully',
           data: appUser,
           token: generateToken(appUser),
         });
@@ -65,7 +65,7 @@ export const getUser = async (
 };
 
 export const createUser = async (req: Request, resp: Response) => {
-  const { email = "", password = "", name = "" } = req.body;
+  const { email = '', password = '', name = '' } = req.body;
   const user = {
     email: email,
     password: password,
@@ -73,7 +73,7 @@ export const createUser = async (req: Request, resp: Response) => {
   };
 
   const isEmail = validator.isEmail(email);
-  user.email = isEmail ? validator.normalizeEmail(email) : "";
+  user.email = isEmail ? validator.normalizeEmail(email) : '';
   const isStrongPassWord = validator.isStrongPassword(password, {
     minLength: 8,
     minSymbols: 1,
@@ -100,7 +100,7 @@ export const createUser = async (req: Request, resp: Response) => {
   if (userAlreadyExist) {
     resp.status(403).json({
       success: false,
-      message: "The email is not available for registration",
+      message: 'The email is not available for registration',
     });
   } else {
     try {
@@ -111,7 +111,7 @@ export const createUser = async (req: Request, resp: Response) => {
       if (answer) {
         resp.status(200).json({
           success: true,
-          message: "User created succefully now login to your account",
+          message: 'User created succefully now login to your account',
         });
       }
     } catch (err: any) {
@@ -129,7 +129,7 @@ export const getAllRegisteredUsers = async (req: Request, resp: Response) => {
   if (!token) {
     resp.status(400).json({
       success: false,
-      message: "No token header provided",
+      message: 'No token header provided',
     });
     return;
   }
@@ -138,7 +138,7 @@ export const getAllRegisteredUsers = async (req: Request, resp: Response) => {
   if (!auth.success) {
     resp.status(403).json({
       success: false,
-      message: "User sent an invalid token ",
+      message: 'User sent an invalid token ',
     });
   } else {
     const users = await userService.findAllUsers();

@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 interface conversationInterface extends mongoose.Document {
   participants: string[];
@@ -21,4 +21,4 @@ const conversationSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-export default mongoose.model<conversationInterface>("Conversation", conversationSchema);
+export default mongoose.model<conversationInterface>('Conversation', conversationSchema);

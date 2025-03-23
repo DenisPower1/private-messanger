@@ -1,7 +1,7 @@
-import Message from "../models/message.model";
-import User from "../models/user.model";
-import { sendNewMessageNotificationEmail } from "../utils/emailSender";
-import validator from "validator";
+import Message from '../models/message.model.js';
+import User from '../models/user.model.js';
+import { sendNewMessageNotificationEmail } from '../utils/emailSender.js';
+import validator from 'validator';
 
 export const getAllMessages = async (senderId: any, recepientId: any) => {
   const messages = await Message.find({
@@ -19,9 +19,8 @@ export const getAllMessages = async (senderId: any, recepientId: any) => {
     .sort({
       createdAt: 1,
     })
-    .populate("sender", "name email _id")
-    .populate("recepient", "name email _id");
-  const lastMessageIndex = messages.length - 1;
+    .populate('sender', 'name email _id')
+    .populate('recepient', 'name email _id');
   const lastMessage = messages[messages.length - 1];
 
   if (lastMessage) {
@@ -31,11 +30,10 @@ export const getAllMessages = async (senderId: any, recepientId: any) => {
         {
           _id: lastMessage._id,
         },
-		{
-        viewedByRecepient: true
-		}
+        {
+          viewedByRecepient: true,
+        },
       );
-
     }
   }
 
