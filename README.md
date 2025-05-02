@@ -11,4 +11,3 @@
 * Send OTP code if user forgot the password
 * Send an email while the recipient is offline.
 * Send messages to any registered user and start chatting right away.
-
