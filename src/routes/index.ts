@@ -1,5 +1,10 @@
 import app from './app';
-import { getUser, createUser, getAllRegisteredUsers } from '../controllers/user.controller';
+import {
+  getUser,
+  createUser,
+  getAllRegisteredUsers,
+  getUserWalletInfo,
+} from '../controllers/user.controller';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 import { getAllMessages, sendMessage } from '../services/message.service';
@@ -10,11 +15,13 @@ import connectToDb from '../config/db';
 import { checkOtp, sendOpt } from '../controllers/password.controller';
 import { decodeToken } from '../utils/tokenGeneration';
 import { deleteTokenFromDatabase } from '../services/token.service';
+import runSchedules from '../cron';
 
 dotenv.config();
 
 const startServer = async () => {
   await connectToDb();
+  runSchedules();
 
   const serverPort = process.env.port;
   const server = createServer(app);
@@ -80,6 +87,7 @@ const startServer = async () => {
   app.post('/api/v1/sendOpt', sendOpt);
   app.post('/api/v1/verifyOpt', checkOtp);
   app.get('/api/v1/users', getAllRegisteredUsers);
+  app.get('/api/v1/user/walletInfo', getUserWalletInfo);
   server.listen(serverPort, () => {
     console.log(`The Server is now alive on port ${serverPort}! `);
   });

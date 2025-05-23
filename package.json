@@ -1,6 +1,6 @@
 {
   "name": "private-messanger",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "keywords": [
     "chat app",
     "messanger app"
@@ -16,7 +16,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.16.0",
     "mongoose": "^8.14.1",
+    "node-cron": "^4.0.7",
     "nodemailer": "^6.10.1",
+    "redis": "^5.1.0",
     "socket.io": "^4.8.1",
     "validator": "^13.15.0"
   },
@@ -28,6 +30,7 @@
     "@types/node": "^22.15.3",
     "@types/nodemailer": "^6.4.17",
     "@types/prettier": "^2.7.3",
+    "@types/redis": "^4.0.10",
     "@types/validator": "^13.15.0",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
@@ -38,9 +41,9 @@
   },
   "scripts": {
     "testApp": "ts-node src/routes/index.ts",
-    "app": "node compiled/src/routes/index",
+    "app": "node compiled/routes/index",
     "compile": "tsc",
     "lint": "npx eslint",
-    "pretiffy": "npx prettier --write ./src"
+    "prettify": "npx prettier --write ./src"
   }
 }

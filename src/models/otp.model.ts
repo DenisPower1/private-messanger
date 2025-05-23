@@ -7,24 +7,26 @@ interface schemaInterface {
   tries: number;
 }
 
-const otpSchema = new mongoose.Schema<schemaInterface>({
-  email: {
-    type: String,
-    required: true,
+const otpSchema = new mongoose.Schema<schemaInterface>(
+  {
+    email: {
+      type: String,
+      required: true,
+    },
+    otp: {
+      type: String,
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      expires: 60 * 4,
+    },
+    tries: {
+      type: Number,
+      default: 3,
+    },
   },
-  otp: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    Default: Date.now,
-    expires: 60 * 4,
-  },
-  tries: {
-    type: Number,
-    default: 3,
-  },
-});
+  { timestamps: true },
+);
 
 export default mongoose.model('Otp', otpSchema);

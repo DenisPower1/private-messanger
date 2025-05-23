@@ -5,17 +5,19 @@ interface modelInterface {
   createdAt: object;
 }
 
-const tokenModel = new mongoose.Schema<modelInterface>({
-  token: {
-    type: String,
-    required: true,
-    unique: true,
+const tokenModel = new mongoose.Schema<modelInterface>(
+  {
+    token: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    createdAt: {
+      type: Date,
+      expires: 60 * 45,
+    },
   },
-  createdAt: {
-    type: Date,
-    required: true,
-    expires: 60 * 45,
-  },
-});
+  { timestamps: true },
+);
 
 export default mongoose.model('Token', tokenModel);

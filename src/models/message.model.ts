@@ -19,6 +19,8 @@ interface schemaInterface {
     fileType: string;
   };
 
+  createdAt: Date;
+
   viewedByRecepient: boolean;
 }
 
@@ -36,16 +38,17 @@ const messageSchema = new mongoose.Schema<schemaInterface>(
     },
     content: {
       text: { type: String, required: true },
-      attachment: {
-        url: String,
-        fileType: String,
-      },
     },
     viewedByRecepient: {
       type: Boolean,
       default: false,
     },
+    createdAt: {
+      type: Date,
+      expires: 60 * 20,
+    },
   },
+
   {
     timestamps: true,
   },

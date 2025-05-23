@@ -1,5 +1,6 @@
 import { DefaultEventsMap, Socket } from 'socket.io';
 import { verifyToken } from './tokenGeneration.js';
+import { decode } from 'jsonwebtoken';
 
 type socketType = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
 
@@ -46,10 +47,12 @@ export const sendMessagesError = (socket: socketType) => {
   });
 };
 
-export const checkAuthNoSocket = (token: string) => {
+export const checkAuthNoSocket = (token: string, userId: string) => {
   try {
     verifyToken(String(token));
-    return { success: true };
+    const decodedToken = decode(token, { json: true });
+
+    return decodedToken?.id == userId ? { success: true } : { success: false };
   } catch (err) {
     return {
       success: false,

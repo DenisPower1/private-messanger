@@ -8,6 +8,6 @@ export const encryptPassword = async (plainPassword: string) => {
   return await hash(plainPassword, 10);
 };
 
-export const checkPassword = async (plainPassword: string, hashedPassWord: string) => {
+export const checkPassword = async (plainPassword: string, hashedPassWord: any) => {
   return await compare(plainPassword, hashedPassWord);
 };

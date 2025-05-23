@@ -32,7 +32,7 @@ const userschema = new mongoose.Schema<schemaInterface>(
     isOnline: {
       type: Boolean,
       required: true,
-      lowercase: true,
+      default: false,
     },
   },
   { timestamps: true },

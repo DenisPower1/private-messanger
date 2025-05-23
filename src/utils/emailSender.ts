@@ -2,7 +2,7 @@ import nodemail from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
 const appEmail = process.env.app_email;
-const apikey = process.env.sendinblue_key;
+const appPassword = process.env.app_password;
 const host = process.env.email_provider_host;
 const transporter = nodemail.createTransport({
   host: host,
@@ -10,7 +10,7 @@ const transporter = nodemail.createTransport({
   secure: false,
   auth: {
     user: appEmail,
-    pass: apikey,
+    pass: appPassword,
   },
 });
 
@@ -36,7 +36,7 @@ export const verifyEmail = (recepientEmail: string, userName: string) => {
   });
 };
 
-export const sendNewMessageNotificationEmail = (
+export const sendNewMessageNotificationEmail = async (
   user: { email: string; name: string },
   senderName: string,
 ) => {
@@ -48,16 +48,16 @@ export const sendNewMessageNotificationEmail = (
         `,
   };
 
-  transporter.sendMail(mailOptions);
+  await transporter.sendMail(mailOptions);
 };
 
-export const sendOTPCodeEmail = (email: string, OTPCode: string) => {
+export const sendOTPCodeEmail = async (email: string, OTPCode: string) => {
   const mailOptions: nodemail.SendMailOptions = {
     from: appEmail,
     to: email,
     subject: 'Recieve your Private Messanger password',
-    text: `The OTP code is: ${OTPCode} do not share it with anyone`,
+    text: `The OTP code is: ${OTPCode} do not share it with anyone, it will expire in 4 minutes`,
   };
 
-  transporter.sendMail(mailOptions);
+  await transporter.sendMail(mailOptions);
 };

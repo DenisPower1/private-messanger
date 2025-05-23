@@ -48,7 +48,7 @@ export const sendOpt = async (req: Request, resp: Response) => {
     const generatedOpt = generateSixRandomDigits();
     const storeOptAnswer = await storeOtp(email, generatedOpt);
     if (storeOptAnswer.success) {
-      sendOTPCodeEmail(normalizedEmail, generatedOpt);
+      await sendOTPCodeEmail(normalizedEmail, generatedOpt);
       resp.status(200).json({
         success: true,
         message: `A number of 6 digits was sent to your email, it will expires in 4 minutes`,

@@ -1,6 +1,5 @@
 import { Response, Request } from 'express';
 import * as userService from '../services/user.service.js';
-import { verifyEmail } from '../utils/emailSender.js';
 import { generateToken } from '../utils/tokenGeneration.js';
 import { checkPassword } from '../utils/password.js';
 import { DefaultEventsMap, Socket } from 'socket.io';
@@ -23,8 +22,6 @@ export const getUser = async (
       message: 'Use a valid e-mail format please!',
       error: 400,
     });
-
-    return;
   } else if (normalizedEmail) {
     const user = await userService.findByEmail(normalizedEmail);
 
@@ -36,8 +33,6 @@ export const getUser = async (
       });
     } else if (user) {
       const isSamePassWord = await checkPassword(password, user.password);
-      console.log(isSamePassWord);
-
       if (!isSamePassWord) {
         sendSocketMessage(socket, eventName, {
           success: false,
@@ -50,6 +45,8 @@ export const getUser = async (
           name: user.name,
           email: user.email,
         };
+
+        await userService.setOnlineStatus(String(appUser.id), true);
 
         sendSocketMessage(socket, eventName, {
           success: true,
@@ -89,11 +86,12 @@ export const createUser = async (req: Request, resp: Response) => {
       success: false,
       message: `Either the e-mail provided is not valid, the password is not strong enought, the name field is empty or less than 3 and more than 10 characters`,
     });
+    return;
   }
 
   const trimedPassWord = validator.trim(password);
-  const savePassWord = validator.escape(trimedPassWord);
-  user.password = savePassWord;
+  const safePassWord = validator.escape(trimedPassWord);
+  user.password = safePassWord;
 
   const userAlreadyExist = await userService.findByEmail(user.email);
 
@@ -104,8 +102,6 @@ export const createUser = async (req: Request, resp: Response) => {
     });
   } else {
     try {
-      verifyEmail(user.email, name);
-
       const answer = await userService.create(user);
 
       if (answer) {
@@ -117,14 +113,14 @@ export const createUser = async (req: Request, resp: Response) => {
     } catch (err: any) {
       resp.status(500).json({
         success: false,
-        message: `The email provided is invalid, server error: ${err}`,
+        message: `Something bad happened!!! The user could not be registered: ${err}`,
       });
     }
   }
 };
 
 export const getAllRegisteredUsers = async (req: Request, resp: Response) => {
-  const { token } = req.headers;
+  const { token, skip = 0, limit = 50, userid } = req.headers;
 
   if (!token) {
     resp.status(400).json({
@@ -133,7 +129,7 @@ export const getAllRegisteredUsers = async (req: Request, resp: Response) => {
     });
     return;
   }
-  const auth = checkAuthNoSocket(String(token));
+  const auth = checkAuthNoSocket(String(token), String(userid));
 
   if (!auth.success) {
     resp.status(403).json({
@@ -141,11 +137,38 @@ export const getAllRegisteredUsers = async (req: Request, resp: Response) => {
       message: 'User sent an invalid token ',
     });
   } else {
-    const users = await userService.findAllUsers();
+    const users = await userService.findAllUsers(Number(skip), Number(limit));
 
     resp.status(200).json({
       success: true,
       data: users,
+    });
+  }
+};
+
+export const getUserWalletInfo = async (req: Request, resp: Response) => {
+  const { token, userid } = req.headers;
+
+  if (!token) {
+    resp.status(400).json({
+      success: false,
+      message: 'No token header provided',
+    });
+    return;
+  }
+  const auth = checkAuthNoSocket(String(token), String(userid));
+
+  if (!auth.success) {
+    resp.status(401).json({
+      success: false,
+      message: 'User sent an invalid token ',
+    });
+  } else {
+    const messageAmount = await userService.getUserMessageAmount(String(userid));
+
+    resp.status(200).json({
+      success: true,
+      data: messageAmount,
     });
   }
 };
