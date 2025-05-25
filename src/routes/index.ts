@@ -1,9 +1,10 @@
 import app from './app';
 import {
-  getUser,
+  logUser,
   createUser,
   getAllRegisteredUsers,
   getUserWalletInfo,
+  toManyLoginRequest,
 } from '../controllers/user.controller.js';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
@@ -14,8 +15,9 @@ import { checkOtp, sendOpt } from '../controllers/password.controller.js';
 import { decodeToken } from '../utils/tokenGeneration.js';
 import { deleteTokenFromDatabase } from '../services/token.service.js';
 import runSchedules from '../cron/index.js';
-import { addOnlineUser, isOnline, removeOnlineUser } from '../services/onlineusers.service.js';
+import { addOnlineUser, isOnline, removeOnlineUser } from '../services/redisuser.service.js';
 import envConfig from '../config/env.js';
+import { loginLimiter } from './middlewares/ratelimit';
 
 const host = envConfig.serverHost;
 const port = envConfig.serverPort;
@@ -93,12 +95,17 @@ const startServer = async () => {
       socket.leave(userId);
       await removeOnlineUser(userId);
     });
-    socket.on('login', async (credentialsBody: any) => {
-      await getUser(socket, credentialsBody);
-    });
   });
 
   app.post('/api/v1/register', createUser);
+  app.post('/api/v1/login', async (req, resp) => {
+    try {
+      loginLimiter.consume(req.ip as string);
+      logUser(req, resp);
+    } catch (err) {
+      toManyLoginRequest(req, resp);
+    }
+  });
   app.post('/api/v1/sendOpt', sendOpt);
   app.post('/api/v1/verifyOpt', checkOtp);
   app.get('/api/v1/users', getAllRegisteredUsers);

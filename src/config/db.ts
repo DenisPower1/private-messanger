@@ -1,17 +1,11 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+import envConfig from './env.js';
 
-dotenv.config();
-const uri = process.env.database_connection_uri;
-const dbName = process.env.database_name;
-const appName = process.env.app_name;
+const uri = envConfig.databaseConnectionUri;
 
 const connectToDb = async () => {
   try {
-    await mongoose.connect(uri || '', {
-      dbName: dbName,
-      appName: appName,
-    });
+    await mongoose.connect(uri);
     console.log('Connection to the database was made successfully!');
   } catch (err) {
     console.warn(`Error while connecting to the database: ${err}`);

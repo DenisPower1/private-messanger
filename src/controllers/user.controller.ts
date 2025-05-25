@@ -2,22 +2,17 @@ import { Response, Request } from 'express';
 import * as userService from '../services/user.service.js';
 import { generateToken } from '../utils/tokenGeneration.js';
 import { checkPassword } from '../utils/password.js';
-import { DefaultEventsMap, Socket } from 'socket.io';
-import { checkAuthNoSocket, sendSocketMessage } from '../utils/helpers.js';
+import { checkAuthNoSocket } from '../utils/helpers.js';
 import validator from 'validator';
 
-export const getUser = async (
-  socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
-  body: any,
-) => {
-  const { email, password } = body;
-  const eventName = 'authentication';
+export const logUser = async (req: Request, resp: Response) => {
+  const { email, password } = req.body;
 
   const isNotEmail = !validator.isEmail(email);
   const normalizedEmail = validator.normalizeEmail(email);
 
   if (isNotEmail) {
-    sendSocketMessage(socket, eventName, {
+    resp.status(400).json({
       success: false,
       message: 'Use a valid e-mail format please!',
       error: 400,
@@ -26,18 +21,18 @@ export const getUser = async (
     const user = await userService.findByEmail(normalizedEmail);
 
     if (user == void 0) {
-      sendSocketMessage(socket, eventName, {
+      resp.status(400).json({
         success: false,
         message: 'The user does not exist',
-        error: 404,
+        error: 400,
       });
     } else if (user) {
       const isSamePassWord = await checkPassword(password, user.password);
+
       if (!isSamePassWord) {
-        sendSocketMessage(socket, eventName, {
+        resp.status(403).json({
           success: false,
           message: 'Invalid credentials',
-          error: 403,
         });
       } else {
         const appUser = {
@@ -46,17 +41,22 @@ export const getUser = async (
           email: user.email,
         };
 
-        sendSocketMessage(socket, eventName, {
+        resp.status(200).json({
           success: true,
           message: 'User logged successfully',
           data: appUser,
           token: generateToken(appUser),
         });
-
-        return appUser;
       }
     }
   }
+};
+
+export const toManyLoginRequest = async (req: Request, resp: Response) => {
+  resp.status(429).json({
+    success: true,
+    message: 'It seems that you forgot your password, try to reset it instead',
+  });
 };
 
 export const createUser = async (req: Request, resp: Response) => {

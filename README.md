@@ -6,6 +6,7 @@
 # Features
 
 * User registration.
+* Login rate limit.
 * Authentication & Authorization.
 * Desappearing Messages by default after 20 minutes.
 * List all registered users while logged.

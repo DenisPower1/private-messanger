@@ -7,7 +7,7 @@ import { GetTokenFromDatabase, deleteTokenFromDatabase } from './token.service.j
 import { checkAuthNoSocket } from '../utils/helpers.js';
 
 export const findByEmail = async (email: string) => {
-  return await User.findOne({ email: email });
+  return await User.findOne({ email });
 };
 
 export const create = async (userData: any) => {
@@ -44,11 +44,6 @@ export const deleteUser = async (token: string, userId: string, password: string
 
       return { success: false, message: 'Error: check your credentials!' };
     }
-
-    return {
-      success: false,
-      message: 'User logged out successfully!',
-    };
   }
 
   return {
