@@ -1,10 +1,8 @@
 import { sign, verify, decode } from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import envConfig from '../config/env.js';
 import { GetTokenFromDatabase, storeTokenInDatabase } from '../services/token.service.js';
 
-dotenv.config();
-
-const jwtSecretKey = String(process.env.jwt_secret_key);
+const jwtSecretKey = envConfig.jwtSecretKey;
 
 export const generateToken = (payload: any) => {
   const token = sign(payload, jwtSecretKey, { expiresIn: '45m' });

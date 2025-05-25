@@ -1,12 +1,12 @@
 import nodemail from 'nodemailer';
-import dotenv from 'dotenv';
+import envConfig from '../config/env.js';
 import { OAuth2Client } from 'google-auth-library';
-dotenv.config();
-const appEmail = process.env.appEmail;
-const host = process.env.emailHost;
-const clientId = process.env.oAuthClientId;
-const clientSecret = process.env.oAuthClientSecret;
-const refreshToken = process.env.oAuth2RefreshToken;
+
+const appEmail = envConfig.appEmail;
+const host = envConfig.emailHost;
+const clientId = envConfig.oAuthClientId;
+const clientSecret = envConfig.oAuthClientSecret;
+const refreshToken = envConfig.oAuth2RefreshToken;
 const authClient = new OAuth2Client({ clientId, clientSecret });
 authClient.setCredentials({ refresh_token: refreshToken });
 

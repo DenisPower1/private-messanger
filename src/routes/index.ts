@@ -4,32 +4,31 @@ import {
   createUser,
   getAllRegisteredUsers,
   getUserWalletInfo,
-} from '../controllers/user.controller';
+} from '../controllers/user.controller.js';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
-import { getAllMessages, sendMessage } from '../services/message.service';
-import { checkAuth, sendMessagesError, sendSocketMessage } from '../utils/helpers';
-import dotenv from 'dotenv';
-import connectToDb from '../config/db';
-import { checkOtp, sendOpt } from '../controllers/password.controller';
-import { decodeToken } from '../utils/tokenGeneration';
-import { deleteTokenFromDatabase } from '../services/token.service';
-import runSchedules from '../cron';
-import { addOnlineUser, isOnline, removeOnlineUser } from '../services/onlineusers.service';
+import { getAllMessages, sendMessage } from '../services/message.service.js';
+import { checkAuth, sendMessagesError, sendSocketMessage } from '../utils/helpers.js';
+import connectToDb from '../config/db.js';
+import { checkOtp, sendOpt } from '../controllers/password.controller.js';
+import { decodeToken } from '../utils/tokenGeneration.js';
+import { deleteTokenFromDatabase } from '../services/token.service.js';
+import runSchedules from '../cron/index.js';
+import { addOnlineUser, isOnline, removeOnlineUser } from '../services/onlineusers.service.js';
+import envConfig from '../config/env.js';
 
-dotenv.config();
+const host = envConfig.serverHost;
+const port = envConfig.serverPort;
 
 const startServer = async () => {
   await connectToDb();
   runSchedules();
-
-  const serverPort = process.env.port;
   const server = createServer(app);
   const SocketChannel = new Server(server, {
     cors: {
       origin: '*',
       methods: ['POST', 'GET'],
-      allowedHeaders: ['Content-Type', 'token'],
+      allowedHeaders: ['content-type', 'token', 'userId', 'skip', 'limit'],
     },
   });
 
@@ -104,8 +103,8 @@ const startServer = async () => {
   app.post('/api/v1/verifyOpt', checkOtp);
   app.get('/api/v1/users', getAllRegisteredUsers);
   app.get('/api/v1/user/walletInfo', getUserWalletInfo);
-  server.listen(serverPort, () => {
-    console.log(`The Server is now alive on port ${serverPort}! `);
+  server.listen({ host, port }, () => {
+    console.log(`The Server is now alive on port ${port}! `);
   });
 };
 
