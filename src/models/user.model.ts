@@ -5,7 +5,6 @@ interface schemaInterface {
   email: string;
   password: string;
   id: string;
-  isOnline: boolean;
 }
 
 const userschema = new mongoose.Schema<schemaInterface>(
@@ -28,11 +27,6 @@ const userschema = new mongoose.Schema<schemaInterface>(
     id: {
       type: String,
       required: true,
-    },
-    isOnline: {
-      type: Boolean,
-      required: true,
-      default: false,
     },
   },
   { timestamps: true },

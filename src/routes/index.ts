@@ -9,13 +9,13 @@ import { Server } from 'socket.io';
 import { createServer } from 'http';
 import { getAllMessages, sendMessage } from '../services/message.service';
 import { checkAuth, sendMessagesError, sendSocketMessage } from '../utils/helpers';
-import { setOnlineStatus } from '../services/user.service';
 import dotenv from 'dotenv';
 import connectToDb from '../config/db';
 import { checkOtp, sendOpt } from '../controllers/password.controller';
 import { decodeToken } from '../utils/tokenGeneration';
 import { deleteTokenFromDatabase } from '../services/token.service';
 import runSchedules from '../cron';
+import { addOnlineUser, isOnline, removeOnlineUser } from '../services/onlineusers.service';
 
 dotenv.config();
 
@@ -34,52 +34,68 @@ const startServer = async () => {
   });
 
   SocketChannel.on('connection', (socket) => {
-    let user: any;
-    socket.on('join', ({ userId }) => {
+    socket.on('logged', async ({ userId }) => {
       socket.join(userId);
-    });
-    socket.on('sendMessage', async ({ senderId, recepientId, text, token }) => {
-      const auth = checkAuth(socket, token);
-      const decodedToken = decodeToken(token);
-      const participantsEntities = new Set([senderId, recepientId]);
+      await addOnlineUser(userId);
+      socket.on('stillOnline', async () => await addOnlineUser(userId));
+      socket.on('disconnect', async () => await removeOnlineUser(userId));
+      socket.on('isOnline', async () => {
+        const onlineStatus = await isOnline(userId);
 
-      if (auth.succes && decodedToken && participantsEntities.has(decodedToken.id)) {
-        const messages = await sendMessage(senderId, recepientId, text);
-        const messageResponse = {
+        sendSocketMessage(socket, 'isOnline', {
           success: true,
-          data: messages,
-        };
-        sendSocketMessage(socket, 'sendMessages', messageResponse);
-        socket.to(recepientId).emit('sendMessages', messageResponse);
-      } else sendMessagesError(socket);
+          data: Boolean(onlineStatus),
+        });
+      });
     });
 
-    socket.on('getMessages', async ({ senderId, recepientId, token }) => {
+    socket.on(
+      'sendMessage',
+      async ({ senderId, recepientId, conversationId = '', text, token }) => {
+        const auth = checkAuth(socket, token);
+        const decodedToken = decodeToken(token);
+        const recepientIsOnline = await isOnline(recepientId);
+        const participantsEntities = new Set([senderId, recepientId]);
+
+        if (auth.succes && decodedToken && participantsEntities.has(decodedToken.id)) {
+          const messages = await sendMessage(senderId, recepientId, conversationId, text);
+          const messageResponse = {
+            success: true,
+            data: messages,
+            conversationId: messages[0]?.conversationId,
+          };
+
+          if (recepientIsOnline)
+            SocketChannel.to(recepientId).emit('recieveMessages', messageResponse);
+          SocketChannel.to(senderId).emit('recieveMessages', messageResponse);
+        } else sendMessagesError(socket);
+      },
+    );
+
+    socket.on('getMessages', async ({ senderId, recepientId, conversationId, token }) => {
       const auth = checkAuth(socket, token);
       const decodedToken = decodeToken(token);
       const participantsEntities = new Set([senderId, recepientId]);
 
       if (auth.succes && decodedToken && participantsEntities.has(decodedToken.id)) {
-        const messages = await getAllMessages(senderId, recepientId);
-        sendSocketMessage(socket, 'sendMessages', {
+        const messages = await getAllMessages(conversationId, senderId);
+        sendSocketMessage(socket, 'recievesMessages', {
           success: true,
           data: messages,
         });
       } else sendMessagesError(socket);
     });
-    socket.on('logout', async ({ token }) => {
+    socket.on('logout', async ({ token, userId }) => {
       await deleteTokenFromDatabase(token);
-      sendSocketMessage(socket, 'loggedOut', {
+      SocketChannel.to(userId).emit('loggedOut', {
         success: true,
-        message: 'User logged out successfully!',
+        message: 'User Logged out successfully!',
       });
+      socket.leave(userId);
+      await removeOnlineUser(userId);
     });
-    socket.on('login', async (credentialsBody) => {
-      user = await getUser(socket, credentialsBody);
-    });
-
-    socket.on('disconnect', async () => {
-      await setOnlineStatus(user?.id, false);
+    socket.on('login', async (credentialsBody: any) => {
+      await getUser(socket, credentialsBody);
     });
   });
 

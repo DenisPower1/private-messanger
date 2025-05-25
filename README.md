@@ -8,7 +8,8 @@
 * User registration.
 * Authentication & Authorization.
 * Desappearing Messages by default after 20 minutes.
-* List all user registered while logged.
-* Send OTP code if user forgot the password.
+* List all registered users while logged.
+* Send OTP code if user forgets the password.
 * Send an email while the recipient is offline.
 * Send messages to any registered user and start chatting right away.
+* Users' Online statuses handled by redis.

@@ -14,11 +14,7 @@ interface schemaInterface {
   content: {
     text: string;
   };
-  attchament: {
-    url: string;
-    fileType: string;
-  };
-
+  conversationId: string;
   createdAt: Date;
 
   viewedByRecepient: boolean;
@@ -39,6 +35,7 @@ const messageSchema = new mongoose.Schema<schemaInterface>(
     content: {
       text: { type: String, required: true },
     },
+    conversationId: { type: String, required: true },
     viewedByRecepient: {
       type: Boolean,
       default: false,

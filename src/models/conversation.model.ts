@@ -1,24 +1,23 @@
 import mongoose from 'mongoose';
+import { ObjectId } from 'mongodb';
 
-interface conversationInterface extends mongoose.Document {
+interface conversationModelInterface {
   participants: string[];
-  conversationId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  conversationId: unknown;
 }
 
-const conversationSchema = new mongoose.Schema(
+const objIdClass = mongoose.Schema.Types.ObjectId;
+
+const conversationSchema = new mongoose.Schema<conversationModelInterface>(
   {
-    participants: {
-      type: [String],
-      required: true,
-    },
+    participants: [{ type: objIdClass, ref: 'User' }],
     conversationId: {
       type: String,
       required: true,
+      default: new ObjectId(),
     },
   },
   { timestamps: true },
 );
 
-export default mongoose.model<conversationInterface>('Conversation', conversationSchema);
+export default mongoose.model('Conversation', conversationSchema);

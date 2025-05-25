@@ -2,30 +2,19 @@ import Message from '../models/message.model.js';
 import User from '../models/user.model.js';
 import Wallet from '../models/wallet.model.js';
 import validator from 'validator';
+import { createConversation, isThereConvoWithGivenUsers } from './conversation.service.js';
 
-export const getAllMessages = async (senderId: any, recepientId: any) => {
+export const getAllMessages = async (conversationId: string, requesterId: string) => {
   const updateMessagesViewedByRecepientField = Message.updateMany(
     {
-      recepient: recepientId,
-      sender: senderId,
+      recepient: requesterId,
     },
     {
       $set: { viewedByRecepient: true },
     },
   );
 
-  const getMessages = Message.find({
-    $or: [
-      {
-        sender: senderId,
-        recepient: recepientId,
-      },
-      {
-        sender: recepientId,
-        recepient: senderId,
-      },
-    ],
-  })
+  const getMessages = Message.find({ conversationId })
     .sort({
       createdAt: 1,
     })
@@ -49,10 +38,22 @@ const canSendMessage = async (userId: string): Promise<boolean> => {
   return false;
 };
 
-export const sendMessage = async (senderId: string, recepientId: string, text: string) => {
+export const sendMessage = async (
+  senderId: string,
+  recepientId: string,
+  text: string,
+  conversationId: any,
+) => {
   const trimedText = validator.trim(text);
   const safeText = validator.escape(trimedText);
+  const participantIds = [senderId, recepientId];
   const allowedToSendSMS = await canSendMessage(senderId);
+  const conversationExist = await isThereConvoWithGivenUsers(participantIds);
+
+  if (!conversationExist) {
+    const newlyCreatedConvo = await createConversation(participantIds);
+    conversationId = newlyCreatedConvo.conversationId;
+  }
 
   if (allowedToSendSMS) {
     const addMessage = Message.insertOne({
@@ -61,6 +62,7 @@ export const sendMessage = async (senderId: string, recepientId: string, text: s
       content: {
         text: safeText,
       },
+      conversationId,
     });
     const updateMessageAmount = Wallet.findOneAndUpdate(
       {
@@ -76,5 +78,9 @@ export const sendMessage = async (senderId: string, recepientId: string, text: s
     Promise.all([addMessage, updateMessageAmount]);
   }
 
-  return await getAllMessages(senderId, recepientId);
+  return await getAllMessages(conversationId, senderId);
+};
+
+export const deleteAllMessages = async (conversationId: string) => {
+  await Message.deleteMany({ conversationId });
 };

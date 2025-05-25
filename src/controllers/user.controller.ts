@@ -46,8 +46,6 @@ export const getUser = async (
           email: user.email,
         };
 
-        await userService.setOnlineStatus(String(appUser.id), true);
-
         sendSocketMessage(socket, eventName, {
           success: true,
           message: 'User logged successfully',
