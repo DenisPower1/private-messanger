@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { str, port, cleanEnv, host } from 'envalid';
 
-const AppNotInProduction = process.env.NODE_ENV;
+const AppNotInProduction = process.env.NODE_ENV !== 'production';
 
 if (AppNotInProduction) config();
 
