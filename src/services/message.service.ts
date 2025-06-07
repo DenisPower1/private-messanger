@@ -2,9 +2,13 @@ import Message from '../models/message.model.js';
 import User from '../models/user.model.js';
 import Wallet from '../models/wallet.model.js';
 import validator from 'validator';
-import { createConversation, isThereConvoWithGivenUsers } from './conversation.service.js';
+import {
+  GetConvoIdWithGivenUsers,
+  createConversation,
+  isThereConvoWithGivenUsers,
+} from './conversation.service.js';
 
-export const getAllMessages = async (conversationId: string, requesterId: string) => {
+export const getAllMessages = async (conversationId: unknown, requesterId: string) => {
   const updateMessagesViewedByRecepientField = Message.updateMany(
     {
       recepient: requesterId,
@@ -38,12 +42,8 @@ const canSendMessage = async (userId: string): Promise<boolean> => {
   return false;
 };
 
-export const sendMessage = async (
-  senderId: string,
-  recepientId: string,
-  text: string,
-  conversationId: any,
-) => {
+export const sendMessage = async (senderId: string, recepientId: string, text: string) => {
+  let conversationId;
   const trimedText = validator.trim(text);
   const safeText = validator.escape(trimedText);
   const participantIds = [senderId, recepientId];
@@ -56,6 +56,8 @@ export const sendMessage = async (
   }
 
   if (allowedToSendSMS) {
+    if (conversationExist) conversationId = await GetConvoIdWithGivenUsers(participantIds);
+
     const addMessage = Message.insertOne({
       recepient: recepientId,
       sender: senderId,

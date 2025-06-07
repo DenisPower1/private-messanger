@@ -20,4 +20,5 @@ export default cleanEnv(process.env, {
   redisPort: port(),
   redisUserName: str(),
   redisPassWord: str(),
+  dbName: str(),
 });

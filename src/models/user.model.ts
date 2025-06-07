@@ -4,7 +4,6 @@ interface schemaInterface {
   name: string;
   email: string;
   password: string;
-  id: string;
 }
 
 const userschema = new mongoose.Schema<schemaInterface>(
@@ -22,11 +21,7 @@ const userschema = new mongoose.Schema<schemaInterface>(
     password: {
       type: String,
       required: true,
-      minLength: 4,
-    },
-    id: {
-      type: String,
-      required: true,
+      minLength: 8,
     },
   },
   { timestamps: true },

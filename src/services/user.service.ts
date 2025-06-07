@@ -65,7 +65,7 @@ export const findUserById = async (id: string) => {
   ]);
 };
 
-export const findAllUsers = async (skip: number, limit: number) => {
+export const findAllUsers = async (skip: number, limit: number, userId: unknown) => {
   /**
    * As I'm using this app for work related stuff
    * and we're no more than 10 people, I'll limit the number
@@ -78,6 +78,13 @@ export const findAllUsers = async (skip: number, limit: number) => {
 
   const users = await User.aggregate([
     {
+      $match: {
+        _id: {
+          $ne: userId,
+        },
+      },
+    },
+    {
       $project: {
         password: 0,
         email: 0,
@@ -88,17 +95,6 @@ export const findAllUsers = async (skip: number, limit: number) => {
     .limit(limit);
 
   return users;
-};
-
-export const setOnlineStatus = async (id: string, isOnline: boolean) => {
-  await User.findOneAndUpdate(
-    {
-      id: id,
-    },
-    {
-      $set: { isOnline },
-    },
-  );
 };
 
 export const getUserMessageAmount = async (userId: string) => {

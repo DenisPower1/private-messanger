@@ -18,6 +18,11 @@ import runSchedules from '../cron/index.js';
 import { addOnlineUser, isOnline, removeOnlineUser } from '../services/redisuser.service.js';
 import envConfig from '../config/env.js';
 import { loginLimiter } from './middlewares/ratelimit';
+import {
+  GetConvoIdWithGivenUsers,
+  createConversation,
+  getAllUserConversation,
+} from '../services/conversation.service';
 
 const host = envConfig.serverHost;
 const port = envConfig.serverPort;
@@ -50,45 +55,53 @@ const startServer = async () => {
       });
     });
 
-    socket.on(
-      'sendMessage',
-      async ({ senderId, recepientId, conversationId = '', text, token }) => {
-        const auth = checkAuth(socket, token);
-        const decodedToken = decodeToken(token);
-        const recepientIsOnline = await isOnline(recepientId);
-        const participantsEntities = new Set([senderId, recepientId]);
+    socket.on('sendMessage', async ({ senderId, recepientId, text, token }) => {
+      const auth = checkAuth(socket, token);
+      const decodedToken = decodeToken(token);
+      const recepientIsOnline = await isOnline(recepientId);
+      const participantsEntities = new Set([senderId, recepientId]);
 
-        if (auth.succes && decodedToken && participantsEntities.has(decodedToken.id)) {
-          const messages = await sendMessage(senderId, recepientId, conversationId, text);
-          const messageResponse = {
-            success: true,
-            data: messages,
-            conversationId: messages[0]?.conversationId,
-          };
+      if (auth.succes && decodedToken && participantsEntities.has(decodedToken.id)) {
+        const messages = await sendMessage(senderId, recepientId, text);
+        const messageResponse = {
+          success: true,
+          data: messages,
+          conversationId: messages[0]?.conversationId,
+        };
 
-          if (recepientIsOnline)
-            SocketChannel.to(recepientId).emit('recieveMessages', messageResponse);
-          SocketChannel.to(senderId).emit('recieveMessages', messageResponse);
-        } else sendMessagesError(socket);
-      },
-    );
+        if (recepientIsOnline)
+          SocketChannel.to(recepientId).emit('recieveMessages', messageResponse);
+        SocketChannel.to(senderId).emit('recieveMessages', messageResponse);
+      } else sendMessagesError(socket);
+    });
 
-    socket.on('getMessages', async ({ senderId, recepientId, conversationId, token }) => {
+    socket.on('createConversation', async ({ senderId, recepientId, token }) => {
       const auth = checkAuth(socket, token);
       const decodedToken = decodeToken(token);
       const participantsEntities = new Set([senderId, recepientId]);
 
       if (auth.succes && decodedToken && participantsEntities.has(decodedToken.id)) {
-        const messages = await getAllMessages(conversationId, senderId);
-        sendSocketMessage(socket, 'recievesMessages', {
-          success: true,
-          data: messages,
-        });
+        const createConvo = createConversation([senderId, recepientId]);
+        const getUserConvos = getAllUserConversation(senderId);
+
+        const [_, conversations] = await Promise.all([createConvo, getUserConvos]);
+
+        SocketChannel.to(senderId).emit('getConversations', { data: conversations });
+      } else sendMessagesError(socket);
+    });
+
+    socket.on('getConversations', async ({ userId, token }) => {
+      const auth = checkAuth(socket, token);
+      const decodedToken = decodeToken(token);
+
+      if (auth.succes && decodedToken && decodedToken.id == userId) {
+        const conversations = await getAllUserConversation(userId);
+        SocketChannel.to(userId).emit('getConversations', { data: conversations });
       } else sendMessagesError(socket);
     });
     socket.on('logout', async ({ token, userId }) => {
       await deleteTokenFromDatabase(token);
-      SocketChannel.to(userId).emit('loggedOut', {
+      sendSocketMessage(socket, 'loggedOut', {
         success: true,
         message: 'User Logged out successfully!',
       });
@@ -100,10 +113,10 @@ const startServer = async () => {
   app.post('/api/v1/register', createUser);
   app.post('/api/v1/login', async (req, resp) => {
     try {
-      loginLimiter.consume(req.ip as string);
+      await loginLimiter.consume(req.ip as string);
       logUser(req, resp);
     } catch (err) {
-      toManyLoginRequest(req, resp);
+      await toManyLoginRequest(req, resp);
     }
   });
   app.post('/api/v1/sendOpt', sendOpt);

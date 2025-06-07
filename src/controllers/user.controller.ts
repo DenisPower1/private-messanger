@@ -135,7 +135,7 @@ export const getAllRegisteredUsers = async (req: Request, resp: Response) => {
       message: 'User sent an invalid token ',
     });
   } else {
-    const users = await userService.findAllUsers(Number(skip), Number(limit));
+    const users = await userService.findAllUsers(Number(skip), Number(limit), userid);
 
     resp.status(200).json({
       success: true,
